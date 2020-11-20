@@ -1,0 +1,14 @@
+[Unit]
+Description=sx-exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+
+ExecStart=/usr/local/bin/sx-exporter.py"
+
+[Install]
+WantedBy=multi-user.target
