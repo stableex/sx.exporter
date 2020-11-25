@@ -269,8 +269,12 @@ class SxCollector(object):
             yield swapsx_flash_fees
             yield swapsx_flash_reserves
 
+            ## Update last_update_time
+            yield GaugeMetricFamily('swapsx_up', 'sx scrape success',1)
+
         except:
           traceback.print_exc()
+          yield GaugeMetricFamily('swapsx_up', 'sx scrape success',0)
 
         del swapsx_info
         del swapsx_tokens
