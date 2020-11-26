@@ -99,37 +99,37 @@ class SxCollector(object):
             while x < len(statsx_trades['rows'][i]['borrow']):
               val_sym   = statsx_trades['rows'][i]['borrow'][x]['key']
               val_count = float(statsx_trades['rows'][i]['borrow'][x]['value'].split(' ')[0])
-              swapsx_trades_borrow.add_metric([val_pool,val_sym],val_count)
+              swapsx_trades_borrow.add_metric([val_sym,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_trades['rows'][i]['quantities']):
               val_sym   = statsx_trades['rows'][i]['quantities'][x]['key']
               val_count = float(statsx_trades['rows'][i]['quantities'][x]['value'].split(' ')[0])
-              swapsx_trades_quantities.add_metric([val_pool,val_sym],val_count)
+              swapsx_trades_quantities.add_metric([val_sym,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_trades['rows'][i]['codes']):
               val_acc   = statsx_trades['rows'][i]['codes'][x]['key']
               val_count = float(statsx_trades['rows'][i]['codes'][x]['value'])
-              swapsx_trades_codes.add_metric([val_pool,val_acc],val_count)
+              swapsx_trades_codes.add_metric([val_acc,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_trades['rows'][i]['symcodes']):
               val_sym   = statsx_trades['rows'][i]['symcodes'][x]['key']
               val_count = float(statsx_trades['rows'][i]['symcodes'][x]['value'])
-              swapsx_trades_symcodes.add_metric([val_pool,val_sym],val_count)
+              swapsx_trades_symcodes.add_metric([val_sym,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_trades['rows'][i]['executors']):
               val_acc   = statsx_trades['rows'][i]['executors'][x]['key']
               val_count = float(statsx_trades['rows'][i]['executors'][x]['value'])
-              swapsx_trades_executors.add_metric([val_pool,val_acc],val_count)
+              swapsx_trades_executors.add_metric([val_acc,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_trades['rows'][i]['profits']):
               val_sym   = statsx_trades['rows'][i]['profits'][x]['key']
               val_count = float(statsx_trades['rows'][i]['profits'][x]['value'].split(' ')[0])
-              swapsx_trades_profits.add_metric([val_pool,val_sym],val_count)
+              swapsx_trades_profits.add_metric([val_acc,val_pool],val_count)
               x+=1
             i+=1
           # Cleanup MEM
@@ -146,19 +146,19 @@ class SxCollector(object):
             while x < len(statsx_flash['rows'][f]['borrow']):
               val_sym   = statsx_flash['rows'][f]['borrow'][x]['key']
               val_count = float(statsx_flash['rows'][f]['borrow'][x]['value'].split(' ')[0])
-              swapsx_flash_borrow.add_metric([val_pool,val_sym],val_count)
+              swapsx_flash_borrow.add_metric([val_sym,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_flash['rows'][f]['fees']):
               val_sym   = statsx_flash['rows'][f]['fees'][x]['key']
               val_count = float(statsx_flash['rows'][f]['fees'][x]['value'].split(' ')[0])
-              swapsx_flash_fees.add_metric([val_pool,val_sym],val_count)
+              swapsx_flash_fees.add_metric([val_sym,val_pool],val_count)
               x+=1
             x=0
             while x < len(statsx_flash['rows'][f]['reserves']):
               val_sym   = statsx_flash['rows'][f]['reserves'][x]['key']
               val_count = float(statsx_flash['rows'][f]['reserves'][x]['value'].split(' ')[0])
-              swapsx_flash_reserves.add_metric([val_pool,val_sym],val_count)
+              swapsx_flash_reserves.add_metric([val_sym,val_pool],val_count)
               x+=1
             f+=1
 
@@ -199,7 +199,7 @@ class SxCollector(object):
             # Grab Spot Prices
             if len(swapsx_spot['rows']) > 0:
               val_swapsx_base = swapsx_spot['rows'][0]['base']
-              swapsx_spotbase.add_metric([val_pool,val_swapsx_base],1)
+              swapsx_spotbase.add_metric([val_swapsx_base,val_pool],1)
               if(DEBUG): print("Detected base: "+val_swapsx_base+" for pool "+val_pool)
 
               DEBUG_MSG = val_pool+"-> "
@@ -207,7 +207,7 @@ class SxCollector(object):
               while x < len(swapsx_spot['rows'][0]['quotes']):
                 val_swapsx_sym   = swapsx_spot['rows'][0]['quotes'][x]['key']
                 val_swapsx_quote = float(swapsx_spot['rows'][0]['quotes'][x]['value'])
-                swapsx_spotquotes.add_metric([val_pool,val_swapsx_sym],val_swapsx_quote)
+                swapsx_spotquotes.add_metric([val_swapsx_sym,val_pool],val_swapsx_quote)
                 if(DEBUG): DEBUG_MSG+=str(val_swapsx_quote)+" "+val_swapsx_sym+","
                 x+=1
               if(DEBUG): print(DEBUG_MSG)
