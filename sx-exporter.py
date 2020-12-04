@@ -31,7 +31,8 @@ class SxCollector(object):
     PARAMS_STATS_FLASH   = {"json":true,"code":"stats.sx","scope":"stats.sx","table":"flash","table_key":"","lower_bound":null,"upper_bound":null,"index_position":1,"key_type":"i64","limit":10,"reverse":false,"show_payer":false}
     PARAMS_STATS_TRADES   = {"json":true,"code":"stats.sx","scope":"stats.sx","table":"trades","table_key":"","lower_bound":null,"upper_bound":null,"index_position":1,"key_type":"i64","limit":10,"reverse":false,"show_payer":false}
     PARAMS_STATS_GW   = {"json":true,"code":"stats.sx","scope":"stats.sx","table":"gateway","table_key":"","lower_bound":null,"upper_bound":null,"index_position":1,"key_type":"i64","limit":10,"reverse":false,"show_payer":false}
- 
+    PARAMS_STATS_VAULT   = {"json":true,"code":"vaults.sx","scope":"vaults.sx","table":"vault","table_key":"","lower_bound":null,"upper_bound":null,"index_position":1,"key_type":"i64","limit":500,"reverse":false,"show_payer":false}
+
     swapsx_info   = []
     swapsx_tokens = []
     swapsx_volumes= []
@@ -62,7 +63,10 @@ class SxCollector(object):
 
         if(DEBUG): print("MEMORY : %s (kb)" % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
-        swapsx_gw_ins_qty        = GaugeMetricFamily('swapsx_gw_ins_qty','gateway.sx input quantities', labels=['sym','pool'])
+        swapsx_vault_deposit     = GaugeMetricFamily('swapsx_vault_deposit','vaults.sx deposit',labels=['sym','pool'])
+        swapsx_vault_staked      = GaugeMetricFamily('swapsx_vault_staked','vaults.sx staked',labels=['sym','pool'])
+        swapsx_vault_supply      = GaugeMetricFamily('swapsx_vault_supply','vaults.sx supply',labels=['sym','pool'])
+        swapsx_gw_ins_qty        = GaugeMetricFamily('swapsx_gw_ins_qty','gateway.sx input quantities',labels=['sym','pool'])
         swapsx_gw_ins_txs        = GaugeMetricFamily('swapsx_gw_ins_txs','gateway.sx input transactions',labels=['sym','pool'])
         swapsx_gw_outs_qty       = GaugeMetricFamily('swapsx_gw_outs_qty','gateway.sx output quantities',labels=['sym','pool'])
         swapsx_gw_outs_txs       = GaugeMetricFamily('swapsx_gw_outs_txs','gateway.sx output transactions',labels=['sym','pool'])
@@ -96,8 +100,26 @@ class SxCollector(object):
           statsx_flash  = self.retryRPC( SxCollector.PARAMS_STATS_FLASH )
           statsx_trades = self.retryRPC( SxCollector.PARAMS_STATS_TRADES )
           statsx_gw     = self.retryRPC( SxCollector.PARAMS_STATS_GW )
+          statsx_vault  = self.retryRPC( SxCollector.PARAMS_STATS_VAULT )
           #print("MEM 2: %s (kb)" % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-          #Grab Stats.sx Gateway
+
+          # Grab Vaults.sx
+          i=0
+          while i < len(statsx_vault['rows']):
+            val_pool = statsx_vault['rows'][i]['account']
+            val_sym1   = statsx_vault['rows'][i]['deposit']['quantity'].split(' ')[1]
+            val_count1 = float(statsx_vault['rows'][i]['deposit']['quantity'].split(' ')[0])
+            swapsx_vault_deposit.add_metric([val_sym1,val_pool], val_count1)
+            val_sym2   = statsx_vault['rows'][i]['staked']['quantity'].split(' ')[1]
+            val_count2 = float(statsx_vault['rows'][i]['staked']['quantity'].split(' ')[0])
+            swapsx_vault_staked.add_metric([val_sym2,val_pool], val_count2)
+            val_sym3   = statsx_vault['rows'][i]['supply']['quantity'].split(' ')[1]
+            val_count3 = float(statsx_vault['rows'][i]['supply']['quantity'].split(' ')[0])
+            swapsx_vault_supply.add_metric([val_sym3,val_pool], val_count3)
+            i+=1
+            if(DEBUG): print("vaults.sx account: %s [%.6f %s / %.6f %s / %.6f %s]"%(val_pool,val_count1,val_sym1,val_count2,val_sym2,val_count3,val_sym3))
+
+          # Grab Stats.sx Gateway
           i=0
           while i < len(statsx_gw['rows']):
             val_pool = statsx_gw['rows'][i]['contract']
@@ -128,14 +150,6 @@ class SxCollector(object):
               val_count = float(statsx_gw['rows'][i]['exchanges'][x]['value'])
               swapsx_gw_exchanges.add_metric([val_acc,val_pool], val_count)
               x+=1
-            x=0
-            while x < len(statsx_gw['rows'][i]['savings']):
-              val_sym = statsx_gw['rows'][i]['savings'][x]['key']
-              val_count = float(statsx_gw['rows'][i]['savings'][x]['value'].split(' ')[0])
-              swapsx_gw_savings.add_metric([val_sym,val_pool], val_count)
-              if(DEBUG): print("GW savings %s : %f %s"%(val_pool,val_count,val_sym))
-              x+=1
-            # TODO ADD FEES
             i+=1
             
           #  Grab Stats.sx Trades
@@ -298,12 +312,14 @@ class SxCollector(object):
               i+=1
 
             #print("MEM 4: %s (kb)" % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+            yield swapsx_vault_deposit
+            yield swapsx_vault_staked
+            yield swapsx_vault_supply
             yield swapsx_gw_ins_qty
             yield swapsx_gw_ins_txs
             yield swapsx_gw_outs_qty
             yield swapsx_gw_outs_txs
             yield swapsx_gw_exchanges
-            yield swapsx_gw_savings
             yield swapsx_gw_total_txs
             yield swapsx_trades_total_txs 
             yield swapsx_trades_borrow    
