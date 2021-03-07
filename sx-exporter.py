@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -u
+#!/usr/bin/python3 -u
 """
     This module grabs the Xnation SX EOS pools form smartcontract and sends it to a prometheus pushgateway.
 """
@@ -54,7 +54,7 @@ class SxCollector(object):
 
         if code != 200:
           if(retry > 10): return rest_api
-          print("api call returned "+str(code)+" retry attempt "+str(retry))+" for "+json.dumps(payload))
+          print("api call returned "+str(code)+" retry attempt "+str(retry)+" for "+json.dumps(payload))
           time.sleep(1*retry)
           retry+=1
       return rest_api
